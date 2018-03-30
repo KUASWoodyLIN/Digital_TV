@@ -29,6 +29,7 @@ for i in range(n):
 
 plt.figure('Compress image')
 plt.imshow(compress_h, cmap='gray')
+plt.imsave('Compress_image.png', compress_h, cmap='gray')
 
 
 # Decompress process
@@ -46,6 +47,8 @@ for i in range(n):
 
 plt.figure('Decompress image')
 plt.imshow(img, cmap='gray')
+plt.imsave('Decompress_image.png', img, cmap='gray')
+
 
 plt.show()
 
