@@ -4,53 +4,49 @@ import cv2
 
 img = plt.imread('./lenna.jpg')
 img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY).astype(np.float64)
-fig = plt.figure()
+plt.figure('Original image')
 plt.imshow(img, cmap='gray')
 
 width = img.shape[0]
 high = img.shape[1]
-print(img.shape)
+print "Image shape: " + str(img.shape)
 
-n = 3
-level_w = np.zeros_like(img, np.float64)
-level_h = np.zeros_like(img, np.float64)
+# n level compress
+n = 4
+
+# Compress process
+compress_w = np.zeros_like(img)
+compress_h = np.zeros_like(img)
 for i in range(n):
-    for i in range(high):
-        for count, j in enumerate(range(0, width, 2)):
-            level_w[i,count] = ((img[i,j] + img[i,j+1]) / 2.)
-            level_w[i,width/2+count] = ((img[i,j] - img[i,j+1]) / 2.)
+  compress_w[:high, :width/2] = (img[:high, :width:2] + img[:high, 1:width:2]) / 2
+  compress_w[:high, width/2:width] = (img[:high, :width:2] - img[:high, 1:width:2]) / 2
 
-    for i in range(width):
-        for count, j in enumerate(range(0, high, 2)):
-            level_h[count, i] = ((level_w[j, i] + level_w[j+1, i]) / 2.)
-            level_h[high/2+count, i] = ((level_w[j, i] - level_w[j+1, i]) / 2.)
-    img = level_h
-    high = high / 2
-    width = width / 2
-fig = plt.figure()
-plt.imshow(level_h, cmap='gray')    
+  compress_h[:high/2, :width] = (compress_w[:high:2, :width] + compress_w[1:high:2, :width]) / 2
+  compress_h[high/2:high, :width] = (compress_w[:high:2, :width] - compress_w[1:high:2, :width]) / 2
+  img = compress_h
+  high = high / 2
+  width = width / 2
 
-return_h = img
-return_w = np.zeros_like(img, np.float64)
+plt.figure('Compress image')
+plt.imshow(compress_h, cmap='gray')
+
+
+# Decompress process
+decompress_h = np.copy(img)
 for i in range(n):
-    width = width * 2
-    high = high * 2
+  high = high * 2
+  width = width * 2
+  decompress_h[:high:2, :width] = img[:high/2, :width] + img[high/2:high, :width]
+  decompress_h[1:high:2, :width] = img[:high/2, :width] - img[high/2:high, :width]
 
-    for i in range(width):
-        for count, j in enumerate(range(0, high, 2)):
-            return_h[j, i] = (img[count, i] + img[count+high/2, i]) / 2.
-            return_h[j+1, i] = (img[count, i] - img[count+high/2, i]) / 2.
+  decompress_w = np.copy(compress_h)
+  decompress_w[:high, :width:2] = decompress_h[:high, :width/2] + decompress_h[:high, width/2:width]
+  decompress_w[:high, 1:width:2] = decompress_h[:high, :width/2] - decompress_h[:high, width/2:width]
+  img = decompress_w
 
-    for i in range(high):
-        for count, j in enumerate(range(0, width, 2)):
-            return_w[i, j] = (return_h[i, count] + return_h[i, count+width/2]) / 2.
-            return_w[i, j+1] = (return_h[i, count] - return_h[i, count+width/2]) / 2.
-    img = return_w
-
-
-
-fig = plt.figure()
+plt.figure('Decompress image')
 plt.imshow(img, cmap='gray')
+
 plt.show()
 
 
